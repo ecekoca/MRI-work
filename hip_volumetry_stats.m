@@ -1,5 +1,6 @@
 %% Hippocampal subfield volumetry (Ece K, 2021)
 
+
 clear all; clc;
 indir='/imaging/projects/cbu/ntad/MTL_partial_T2/BL/';
 subfol='final';
@@ -102,6 +103,8 @@ for s=3:length(l)
     end
 end
 
+%% Collate & tidy up in a table
+
 tbl=table(subs,L_corr_vol(:,1),L_corr_vol(:,2),L_corr_vol(:,3),L_corr_vol(:,4),L_corr_vol(:,5),...
     L_corr_vol(:,6),L_corr_vol(:,7),L_corr_vol(:,8),L_corr_vol(:,9),L_corr_vol(:,10),L_corr_vol(:,11),ICV,...
     'VariableNames',{'SUBS','CA1','CA2','DG','CA3','MISC','SUB','ERC','BA35','BA36','PHC','SULCUS','ICV'}); disp(tbl)
@@ -146,8 +149,8 @@ r_hem_data=tbl;
 exclude=[exclude T.subs(intersect(find(strcmp(T.group,'C')),find(strcmp(T.biomarker,'positive'))))]; % exclude positive controls
 exclude=[exclude T.subs(intersect(find(strcmp(T.group,'MCI')),find(strcmp(T.biomarker,'negative'))))']; % exclude negative MCI
 exclude=[exclude T.subs(intersect(find(strcmp(T.group,'AD')),find(strcmp(T.biomarker,'negative'))))']; % exclude negative AD
-exclude=[exclude T.subs(intersect(find(strcmp(T.group,'MCI')),find(strcmp(T.biomarker,'unknown'))))']; % exclude negative MCI
-exclude=[exclude T.subs(intersect(find(strcmp(T.group,'AD')),find(strcmp(T.biomarker,'unknown'))))']; % exclude negative AD
+exclude=[exclude T.subs(intersect(find(strcmp(T.group,'MCI')),find(strcmp(T.biomarker,'unknown'))))']; % exclude MCI with unknown biomarkers
+exclude=[exclude T.subs(intersect(find(strcmp(T.group,'AD')),find(strcmp(T.biomarker,'unknown'))))']; % exclude AD with unknown biomarkers
 exclude=unique(exclude);
 
 l_hem_data(find(ismember(l_hem_data.SUBS,exclude)),:)=[];
@@ -155,7 +158,7 @@ r_hem_data(find(ismember(r_hem_data.SUBS,exclude)),:)=[];
 cog_data=cog_data(find(ismember(cog_data.subs,r_hem_data.SUBS)),:); 
 cog_data=sortrows(cog_data,1,'ascend');l_hem_data=sortrows(l_hem_data,1,'ascend');r_hem_data=sortrows(r_hem_data,1,'ascend');
 
-%% Correct for covariates
+%% Correct for covariates 
 
 k=1;
 for f=2:12
@@ -223,63 +226,3 @@ set(gca, 'XtickLabel', {'C','F','MCI','AD'})
 title('ICV'); %ylim([0 1]);
 print(gcf,[outdir 'ICV_boxplots.bmp'],'-dbmp','-r300');close(gcf)
 
-c_f_ind=intersect(find(strcmp(cog_data.group,'C')),find(cog_data.sex==1));
-f_f_ind=intersect(find(strcmp(cog_data.group,'F')),find(cog_data.sex==1));
-mci_f_ind=intersect(find(strcmp(cog_data.group,'MCI')),find(cog_data.sex==1));
-ad_f_ind=intersect(find(strcmp(cog_data.group,'AD')),find(cog_data.sex==1));
-groups_f = [0.1*ones(size(c_f_ind)); 0.4*ones(size(f_f_ind));0.7*ones(size(mci_f_ind)); 1*ones(size(ad_f_ind))];
-
-figure('color','w'); set(gca,'FontSize',14,'Color','w')
-H=notBoxPlot([r_hem_data.ICV(c_f_ind); r_hem_data.ICV(f_f_ind); r_hem_data.ICV(mci_f_ind); r_hem_data.ICV(ad_f_ind)],...
-    groups_f,'jitter',0.2,'style','sdline')
-set([H([1:4]).data],'MarkerSize',8,'markerFaceColor','none','markerEdgeColor', 'none')
-set([H(1).semPtch],'FaceColor',[63 14 137]./255,'EdgeColor',[63 14 137]./255,'LineWidth',3)
-set([H(2).semPtch],'FaceColor',[0 192 163]./255,'EdgeColor',[0 192 163]./255,'LineWidth',3)
-set([H(3).semPtch],'FaceColor',[243 255 0]./255,'EdgeColor',[243 255 0]./255,'LineWidth',3)
-set([H(4).semPtch],'FaceColor',[150 150 150]./255,'EdgeColor',[150 150 150]./255,'LineWidth',3)
-set([H(1:4).mu],'Color','w','LineWidth',3);
-set([H(1:4).sd],'Color',[150 150 150]./255,'LineWidth',3);
-set(gca, 'XtickLabel', {'C','F','MCI','AD'})
-title('ICV in women'); %ylim([0 1]);
-print(gcf,[outdir 'ICV_women_boxplots.bmp'],'-dbmp','-r300');close(gcf)
-
-c_m_ind=intersect(find(strcmp(cog_data.group,'C')),find(cog_data.sex==0));
-f_m_ind=intersect(find(strcmp(cog_data.group,'F')),find(cog_data.sex==0));
-mci_m_ind=intersect(find(strcmp(cog_data.group,'MCI')),find(cog_data.sex==0));
-ad_m_ind=intersect(find(strcmp(cog_data.group,'AD')),find(cog_data.sex==0));
-groups_m = [0.1*ones(size(c_m_ind)); 0.4*ones(size(f_m_ind));0.7*ones(size(mci_m_ind)); 1*ones(size(ad_m_ind))];
-
-figure('color','w'); set(gca,'FontSize',14,'Color','w')
-H=notBoxPlot([r_hem_data.ICV(c_m_ind); r_hem_data.ICV(f_m_ind); r_hem_data.ICV(mci_m_ind); r_hem_data.ICV(ad_m_ind)],...
-    groups_m,'jitter',0.2,'style','sdline')
-set([H([1:4]).data],'MarkerSize',8,'markerFaceColor','none','markerEdgeColor', 'none')
-set([H(1).semPtch],'FaceColor',[63 14 137]./255,'EdgeColor',[63 14 137]./255,'LineWidth',3)
-set([H(2).semPtch],'FaceColor',[0 192 163]./255,'EdgeColor',[0 192 163]./255,'LineWidth',3)
-set([H(3).semPtch],'FaceColor',[243 255 0]./255,'EdgeColor',[243 255 0]./255,'LineWidth',3)
-set([H(4).semPtch],'FaceColor',[150 150 150]./255,'EdgeColor',[150 150 150]./255,'LineWidth',3)
-set([H(1:4).mu],'Color','w','LineWidth',3);
-set([H(1:4).sd],'Color',[150 150 150]./255,'LineWidth',3);
-set(gca, 'XtickLabel', {'C','F','MCI','AD'})
-title('ICV in men'); %ylim([0 1]);
-print(gcf,[outdir 'ICV_men_boxplots.bmp'],'-dbmp','-r300');close(gcf)
-
-figure('color','w'); set(gca,'FontSize',14,'Color','w')
-H=notBoxPlot([cog_data.age(c_ind); cog_data.age(f_ind); cog_data.age(mci_ind); cog_data.age(ad_ind)],...
-    groups,'jitter',0.2,'style','sdline')
-set([H([1:4]).data],'MarkerSize',8,'markerFaceColor','none','markerEdgeColor', 'none')
-set([H(1).semPtch],'FaceColor',[63 14 137]./255,'EdgeColor',[63 14 137]./255,'LineWidth',3)
-set([H(2).semPtch],'FaceColor',[0 192 163]./255,'EdgeColor',[0 192 163]./255,'LineWidth',3)
-set([H(3).semPtch],'FaceColor',[243 255 0]./255,'EdgeColor',[243 255 0]./255,'LineWidth',3)
-set([H(4).semPtch],'FaceColor',[150 150 150]./255,'EdgeColor',[150 150 150]./255,'LineWidth',3)
-set([H(1:4).mu],'Color','w','LineWidth',3);
-set([H(1:4).sd],'Color',[150 150 150]./255,'LineWidth',3);
-set(gca, 'XtickLabel', {'C','F','MCI','AD'})
-title('Age'); %ylim([0 1]);
-print(gcf,[outdir 'Age_boxplots.bmp'],'-dbmp','-r300');close(gcf)
-
-%% Test
-
-load(cog_fname)
-
-[p tbl stats]=anovan(ento,{group,tiv,age},'Continuous',[2 3],'varnames',{'Group','TIV','Age'}) % ANCOVA
-multcompare(stats)
